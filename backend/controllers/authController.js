@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import genrateToken from "../utils/generateToken.js";
+import generateToken from "../utils/generateToken.js"
 import { successResponse, errorResponse } from "../utils/response.js";
 
 export const signup = async (req, res) => {
@@ -27,7 +27,7 @@ export const signup = async (req, res) => {
 
     // Genrate JWT Token
 
-    const token = genrateToken(user._id);
+    const token = generateToken(user._id);
 
     // send success response
     return successResponse(res, 201, "user registered successfully", {
@@ -70,6 +70,7 @@ export const signin = async (req,res) => {
 
     // Generate JWT token
     const token = generateToken(user._id);
+    console.log(token)
 
     // Send success response
     return successResponse(res, 200, "Login successful", {

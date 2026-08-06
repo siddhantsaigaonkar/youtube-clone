@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import { signup,signin } from "../controllers/authController.js";
 import { validateSignup,validateLogin } from "../middleware/authValidation.js";
