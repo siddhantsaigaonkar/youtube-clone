@@ -1,12 +1,15 @@
 
 
 import express from "express";
-import { signup } from "../controllers/authController.js";
-import validateSignup from "../middleware/validateSignup.js";
+import { signup,signin } from "../controllers/authController.js";
+import { validateSignup,validateLogin } from "../middleware/authValidation.js";
 
 const router = express.Router();
 
 // Register a new user
 router.post("/signup", validateSignup, signup);
 
-export default router;
+// Login existing user
+router.post("/signin", validateLogin, signin);
+
+export default router; 
