@@ -8,7 +8,6 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 
 
-
 // Load variables from .env file
 dotenv.config();
 
