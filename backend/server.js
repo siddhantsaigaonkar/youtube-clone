@@ -7,6 +7,9 @@ import dotenv from "dotenv";
 // Import database connection
 import connectDB from "./config/db.js";
 
+// Import authRoute 
+import authRoutes from "./routes/authRoutes.js";
+
 
 // Load variables from .env file
 dotenv.config();
@@ -18,6 +21,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 connectDB()
+
+// Parse incoming JSON data
+app.use(express.json());
+
+// Authentication routes
+app.use("/api/auth", authRoutes);
 // Test route to verify the server is running
 app.get("/", (req, res) => {
   res.send("YouTube Clone Backend Running ");
