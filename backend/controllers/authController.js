@@ -1,11 +1,9 @@
-import bycrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import genrateToken from "../utils/generateToken.js";
-import { successResponse,errorResponse } from "../utils/response.js";
+import { successResponse, errorResponse } from "../utils/response.js";
 
-
-
-export const signup = async(req,res) => {
+export const signup = async (req, res) => {
   try {
     // Get user data from request body
     const { name, email, password } = req.body;
@@ -29,13 +27,63 @@ export const signup = async(req,res) => {
 
     // Genrate JWT Token
 
-    const token = genrateToken(user._id)
+    const token = genrateToken(user._id);
 
     // send success response
-    return successResponse(res,201,"user registered successfully",{token,user:{id:user._id,name:user.name,email:user.email,profilePic:user.profilePic}})
+    return successResponse(res, 201, "user registered successfully", {
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePic: user.profilePic,
+      },
+    });
   } catch (error) {
-  console.error(error);
+    console.error(error);
 
-  return errorResponse(res, 500, "Internal Server Error");
- } 
-}
+    return errorResponse(res, 500, "Internal Server Error");
+  }
+};
+
+
+export const signin = async (req,res) => {
+  
+  try {
+    // Get email and password from request body
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    // Check if user exists
+    if (!user) {
+      return errorResponse(res, 404, "User not found");
+    }
+    // Compare entered password with hashed password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    // Check if password is correct
+    if (!isPasswordMatch) {
+      return errorResponse(res, 401, "Invalid email or password");
+    }
+
+    // Generate JWT token
+    const token = generateToken(user._id);
+
+    // Send success response
+    return successResponse(res, 200, "Login successful", {
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePic: user.profilePic,
+      },
+    });
+  } catch (error) {
+        console.log(error);
+
+        return errorResponse(res, 500, "Something went wrong while logging in");
+  }
+} 
