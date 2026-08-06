@@ -1,11 +1,12 @@
 // Import Express framework
 import express from "express";
 
-
-import connectDB from "./config/db.js";
-
 // Import dotenv to load environment variables
 import dotenv from "dotenv";
+
+// Import database connection
+import connectDB from "./config/db.js";
+
 
 
 // Load variables from .env file
