@@ -1,8 +1,9 @@
+// Import dotenv to load environment variables
+import "dotenv/config";
+
 // Import Express framework
 import express from "express";
-
-// Import dotenv to load environment variables
-import dotenv from "dotenv";
+import videoRoutes from "./routes/videoRoutes.js";
 
 // Import database connection
 import connectDB from "./config/db.js";
@@ -10,9 +11,6 @@ import connectDB from "./config/db.js";
 // Import authRoute 
 import authRoutes from "./routes/authRoutes.js";
 
-
-// Load variables from .env file
-dotenv.config();
 
 // Create Express application
 const app = express();
@@ -27,6 +25,9 @@ app.use(express.json());
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
+
+//  Video routes
+app.use("/api/videos", videoRoutes);
 // Test route to verify the server is running
 app.get("/", (req, res) => {
   res.send("YouTube Clone Backend Running ");

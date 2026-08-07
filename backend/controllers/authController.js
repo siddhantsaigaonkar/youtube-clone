@@ -3,6 +3,9 @@ import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 
+
+// signup controller
+
 export const signup = async (req, res) => {
   try {
     // Get user data from request body
@@ -46,6 +49,9 @@ export const signup = async (req, res) => {
   }
 };
 
+
+// signin controller
+
 export const signin = async (req, res) => {
   try {
     // Get email and password from request body
@@ -88,6 +94,7 @@ export const signin = async (req, res) => {
 };
 
 // Get the profile of the currently logged-in user
+
 export const getCurrentUser = async (req, res) => {
   try {
     // authMiddleware attaches the authenticated user's details to req.user
