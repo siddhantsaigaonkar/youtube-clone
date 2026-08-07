@@ -6,6 +6,8 @@ import { errorResponse } from "../utils/response.js";
 // Verify user authentication
 const authMiddleware = async (req, res, next) => {
   try {
+
+
     // Get authorization header
     const authHeader = req.headers.authorization;
 
@@ -16,6 +18,7 @@ const authMiddleware = async (req, res, next) => {
 
     // Extract token from the authorization header
     const token = authHeader.split(" ")[1];
+   
 
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

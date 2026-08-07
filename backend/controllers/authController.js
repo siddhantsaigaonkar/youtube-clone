@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import generateToken from "../utils/generateToken.js"
+import generateToken from "../utils/generateToken.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 
 export const signup = async (req, res) => {
@@ -46,9 +46,7 @@ export const signup = async (req, res) => {
   }
 };
 
-
-export const signin = async (req,res) => {
-  
+export const signin = async (req, res) => {
   try {
     // Get email and password from request body
     const { email, password } = req.body;
@@ -70,7 +68,7 @@ export const signin = async (req,res) => {
 
     // Generate JWT token
     const token = generateToken(user._id);
-    console.log(token)
+    console.log(token);
 
     // Send success response
     return successResponse(res, 200, "Login successful", {
@@ -83,8 +81,30 @@ export const signin = async (req,res) => {
       },
     });
   } catch (error) {
-        console.log(error);
+    console.log(error);
 
-        return errorResponse(res, 500, "Something went wrong while logging in");
+    return errorResponse(res, 500, "Something went wrong while logging in");
   }
-} 
+};
+
+// Get the profile of the currently logged-in user
+export const getCurrentUser = async (req, res) => {
+  try {
+    // authMiddleware attaches the authenticated user's details to req.user
+    // Return those details to the client
+    return successResponse(
+      res,
+      200,
+      "User profile fetched successfully",
+      req.user
+    );
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+
+    return errorResponse(
+      res,
+      500,
+      "Something went wrong while fetching the user profile"
+    );
+  }
+};

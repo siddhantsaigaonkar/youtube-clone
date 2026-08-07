@@ -1,7 +1,7 @@
 // Send success response
 export const successResponse = (res, statusCode, message, data = {}) => {
   return res.status(statusCode).json({
-    sucess: true,
+    success: true,
     message,
     ...data
   });
