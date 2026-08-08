@@ -60,3 +60,114 @@ export const uploadVideo = async (req, res) => {
     return errorResponse(res, 500, "Failed to upload video");
   }
 };
+
+
+
+// Get all videos
+export const getAllVideos = async (req, res) => {
+  try {
+    // Fetch all videos from MongoDB
+    const videos = await Video.find()
+      .populate("owner", "name profilePic")
+      .sort({ createdAt: -1 });
+
+    // Send successful response
+    return successResponse(
+      res,
+      200,
+      "Videos fetched successfully",
+      videos
+    );
+  } catch (error) {
+    console.error("Get all videos error:", error);
+
+    // Send error response
+    return errorResponse(
+      res,
+      500,
+      "Failed to fetch videos"
+    );
+  }
+};
+
+
+// Get a single video by its ID
+export const getVideoById = async (req, res) => {
+  try {
+    // Get the video ID from the URL parameter
+    const { id } = req.params;
+
+    // Find the video in MongoDB and include basic owner information
+    const video = await Video.findById(id)
+      .populate("owner", "name profilePic");
+
+    // Check if the video exists
+    if (!video) {
+      return errorResponse(
+        res,
+        404,
+        "Video not found"
+      );
+    }
+
+    // Return the requested video
+    return successResponse(
+      res,
+      200,
+      "Video fetched successfully",
+      video
+    );
+  } catch (error) {
+    console.error("Get video by ID error:", error);
+
+    return errorResponse(
+      res,
+      500,
+      "Failed to fetch video"
+    );
+  }
+};
+
+
+// Delete a video
+export const deleteVideo = async (req, res) => {
+  try {
+    // Get the video ID from the URL parameter
+    const { id } = req.params;
+
+    // Find the video by ID
+    const video = await Video.findById(id);
+
+    // Check whether the video exists
+    if (!video) {
+      return errorResponse(res, 404, "Video not found");
+    }
+
+    // Check whether the logged-in user owns this video
+    if (video.owner.toString() !== req.user._id.toString()) {
+      return errorResponse(
+        res,
+        403,
+        "You are not authorized to delete this video"
+      );
+    }
+
+    // Delete the video from MongoDB
+    await Video.findByIdAndDelete(id);
+
+    // Send successful response
+    return successResponse(
+      res,
+      200,
+      "Video deleted successfully"
+    );
+  } catch (error) {
+    console.error("Delete video error:", error);
+
+    return errorResponse(
+      res,
+      500,
+      "Failed to delete video"
+    );
+  }
+};
