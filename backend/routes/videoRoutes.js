@@ -1,7 +1,7 @@
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { uploadVideo,getAllVideos,getVideoById,deleteVideo } from "../controllers/videoController.js";
+import { uploadVideo,getAllVideos,getVideoById,deleteVideo,updateVideo } from "../controllers/videoController.js";
 
 
 const router = express.Router();
@@ -28,6 +28,18 @@ router.delete(
   "/:id",
   authMiddleware,
   deleteVideo
+);
+
+
+// Update video
+router.put(
+  "/:id",
+  authMiddleware,
+  upload.fields([
+    { name: "video", maxCount: 1 },
+    { name: "thumbnail", maxCount: 1 },
+  ]),
+  updateVideo,
 );
 
 export default router;

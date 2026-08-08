@@ -8,11 +8,5 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-console.log("Cloud name:", process.env.CLOUDINARY_CLOUD_NAME);
-console.log("API key:", process.env.CLOUDINARY_API_KEY);
-console.log("API secret exists:", !!process.env.CLOUDINARY_API_SECRET);
-console.log("mongourl", process.env.MONGODB_URI);
-
-
 // Export configured Cloudinary instance
 export default cloudinary;
