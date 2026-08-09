@@ -7,6 +7,9 @@ export const uploadVideo = async (req, res) => {
     // Get video information from the request body
     const { title, description, category } = req.body;
 
+    console.log(req);
+    
+
     // Check whether both video and thumbnail files were uploaded
     if (!req.files?.video || !req.files?.thumbnail) {
       return errorResponse(res, 400, "Video and thumbnail are required");
@@ -16,10 +19,15 @@ export const uploadVideo = async (req, res) => {
     const videoFile = req.files.video[0];
     const thumbnailFile = req.files.thumbnail[0];
 
+  
+    
+    
+
     // Convert video buffer to Base64 format for Cloudinary
-    const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString(
-      "base64",
-    )}`;
+    const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString("base64")}`;
+
+
+    
 
     // Upload video to Cloudinary
     const videoResult = await cloudinary.uploader.upload(videoData, {
@@ -27,6 +35,7 @@ export const uploadVideo = async (req, res) => {
       folder: "youtube-clone/videos",
     });
 
+    
     // Convert thumbnail buffer to Base64 format
     const thumbnailData = `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString(
       "base64",
@@ -38,13 +47,21 @@ export const uploadVideo = async (req, res) => {
       folder: "youtube-clone/thumbnails",
     });
 
+ 
+    
     // Create video document in MongoDB
     const video = await Video.create({
       title,
       description,
       category,
+
+      // Video Cloudinary details
       videoUrl: videoResult.secure_url,
+      videoPublicId: videoResult.public_id,
+
+      // Thumbnail Cloudinary details
       thumbnailUrl: thumbnailResult.secure_url,
+      thumbnailPublicId: thumbnailResult.public_id,
 
       // User is provided by authMiddleware after JWT verification
       owner: req.user._id,
@@ -68,6 +85,9 @@ export const getAllVideos = async (req, res) => {
       .populate("owner", "name profilePic")
       .sort({ createdAt: -1 });
 
+    if (videos.length === 0) {
+       return successResponse(res, 200, "no video added ");
+    }
     // Send successful response
     return successResponse(res, 200, "Videos fetched successfully", videos);
   } catch (error) {
@@ -110,6 +130,9 @@ export const deleteVideo = async (req, res) => {
     // Find the video by ID
     const video = await Video.findById(id);
 
+    console.log(video);
+    
+
     // Check whether the video exists
     if (!video) {
       return errorResponse(res, 404, "Video not found");
@@ -122,6 +145,20 @@ export const deleteVideo = async (req, res) => {
         403,
         "You are not authorized to delete this video",
       );
+    }
+
+    // Delete video from Cloudinary
+    if (video.videoPublicId) {
+      await cloudinary.uploader.destroy(video.videoPublicId, {
+        resource_type: "video",
+      });
+    }
+
+    // Delete thumbnail from Cloudinary
+    if (video.thumbnailPublicId) {
+      await cloudinary.uploader.destroy(video.thumbnailPublicId, {
+        resource_type: "image",
+      });
     }
 
     // Delete the video from MongoDB
@@ -137,7 +174,7 @@ export const deleteVideo = async (req, res) => {
 };
 
 
-// update video
+// Update video
 export const updateVideo = async (req, res) => {
   try {
     // Get video ID from URL
@@ -176,46 +213,78 @@ export const updateVideo = async (req, res) => {
       video.category = category;
     }
 
-    // Check if a new video was uploaded
+    // ------------------------------------
+    // Update video file
+    // ------------------------------------
     if (req.files?.video?.[0]) {
       const videoFile = req.files.video[0];
 
-      // Upload new video to Cloudinary
+      // Delete old video from Cloudinary
+      if (video.videoPublicId) {
+        await cloudinary.uploader.destroy(video.videoPublicId, {
+          resource_type: "video",
+        });
+      }
+
+      // Upload new video
       const videoUpload = await cloudinary.uploader.upload(
-        `data:${videoFile.mimetype};base64,${videoFile.buffer.toString("base64")}`,
+        `data:${videoFile.mimetype};base64,${videoFile.buffer.toString(
+          "base64",
+        )}`,
         {
           resource_type: "video",
           folder: "youtube-clone/videos",
         },
       );
 
-      // Replace old video URL
+      // Save new video URL and public ID
       video.videoUrl = videoUpload.secure_url;
+      video.videoPublicId = videoUpload.public_id;
     }
 
-    // Check if a new thumbnail was uploaded
+    // ------------------------------------
+    // Update thumbnail
+    // ------------------------------------
     if (req.files?.thumbnail?.[0]) {
       const thumbnailFile = req.files.thumbnail[0];
 
-      // Upload new thumbnail to Cloudinary
+      // Delete old thumbnail from Cloudinary
+      if (video.thumbnailPublicId) {
+        await cloudinary.uploader.destroy(video.thumbnailPublicId);
+      }
+
+      // Upload new thumbnail
       const thumbnailUpload = await cloudinary.uploader.upload(
-        `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString("base64")}`,
+        `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString(
+          "base64",
+        )}`,
         {
           folder: "youtube-clone/thumbnails",
         },
       );
 
-      // Replace old thumbnail URL
+      // Save new thumbnail URL and public ID
       video.thumbnailUrl = thumbnailUpload.secure_url;
+      video.thumbnailPublicId = thumbnailUpload.public_id;
     }
 
     // Save updated video
     await video.save();
 
-    return successResponse(res, 200, "Video updated successfully", video);
+    // Send successful response
+    return successResponse(
+      res,
+      200,
+      "Video updated successfully",
+      video,
+    );
   } catch (error) {
     console.error("Update video error:", error);
 
-    return errorResponse(res, 500, "Failed to update video");
+    return errorResponse(
+      res,
+      500,
+      "Failed to update video",
+    );
   }
 };
