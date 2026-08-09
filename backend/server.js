@@ -15,6 +15,9 @@ import authRoutes from "./routes/authRoutes.js";
 // import likeRoute
 import likeRoutes from "./routes/likeRoutes.js";
 
+// Import channel routes
+import channelRoutes from "./routes/channelRoutes.js"
+
 
 // Create Express application
 const app = express();
@@ -36,6 +39,10 @@ app.use("/api/videos", videoRoutes);
 //  Like routes
 app.use("/api/likes", likeRoutes);
 // Test route to verify the server is running
+
+
+// Use channel routes
+app.use("/api/channels", channelRoutes);
 
 app.get("/", (req, res) => {
   res.send("YouTube Clone Backend Running ");
