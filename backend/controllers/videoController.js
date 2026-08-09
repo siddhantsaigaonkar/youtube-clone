@@ -288,3 +288,44 @@ export const updateVideo = async (req, res) => {
     );
   }
 };
+
+
+// Increase video view count
+export const viewVideo = async (req, res) => {
+  try {
+    // Get video ID from the URL parameter
+    const { id } = req.params;
+
+    // Find the video by ID and increase views by 1
+    const video = await Video.findByIdAndUpdate(
+      id,
+      {
+        $inc: { views: 1 },
+      },
+      {
+        new: true,
+      },
+    );
+
+    // Check whether the video exists
+    if (!video) {
+      return errorResponse(res, 404, "Video not found");
+    }
+
+    // Send the updated view count to the client
+    return successResponse(
+      res,
+      200,
+      "Video view count updated successfully",
+      {
+        views: video.views,
+      },
+    );
+  } catch (error) {
+    // Print error in the server console for debugging
+    console.error("View video error:", error);
+
+    // Send error response to the client
+    return errorResponse(res, 500, "Failed to update video views");
+  }
+};
