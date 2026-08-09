@@ -54,3 +54,55 @@ export const likeVideo = async (req, res) => {
     return errorResponse(res, 500, "Failed to like/dislike video");
   }
 };
+
+
+
+
+// Get like and dislike count of a video
+export const getLikeDislikeCount = async (req, res) => {
+  try {
+    // Get video ID from the URL parameter
+    const { id } = req.params;
+
+    // Find the video in MongoDB
+    const video = await Video.findById(id);
+
+    // Check whether the video exists
+    if (!video) {
+      return errorResponse(res, 404, "Video not found");
+    }
+
+    // Count how many users liked this video
+    const likes = await Like.countDocuments({
+      video: id,
+      isLike: true,
+    });
+
+    // Count how many users disliked this video
+    const dislikes = await Like.countDocuments({
+      video: id,
+      isLike: false,
+    });
+
+    // Send the like and dislike counts to the client
+    return successResponse(
+      res,
+      200,
+      "Like/dislike count fetched successfully",
+      {
+        likes,
+        dislikes,
+      },
+    );
+  } catch (error) {
+    // Print the error in the server console for debugging
+    console.error("Get like/dislike count error:", error);
+
+    // Send error response to the client
+    return errorResponse(
+      res,
+      500,
+      "Failed to get like/dislike count",
+    );
+  }
+};
