@@ -55,6 +55,16 @@ const videoSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    videoPublicId: {
+      type: String,
+      required: true,
+    },
+
+    thumbnailPublicId: {
+      type: String,
+      required: true,
+    },
   },
   {
     // Automatically create createdAt and updatedAt fields

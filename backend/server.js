@@ -12,6 +12,10 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 
 
+// import likeRoute
+import likeRoutes from "./routes/likeRoutes.js";
+
+
 // Create Express application
 const app = express();
 
@@ -28,7 +32,11 @@ app.use("/api/auth", authRoutes);
 
 //  Video routes
 app.use("/api/videos", videoRoutes);
+
+//  Like routes
+app.use("/api/likes", likeRoutes);
 // Test route to verify the server is running
+
 app.get("/", (req, res) => {
   res.send("YouTube Clone Backend Running ");
 });
