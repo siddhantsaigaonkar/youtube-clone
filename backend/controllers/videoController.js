@@ -367,3 +367,43 @@ export const searchVideos = async (req, res) => {
     );
   }
 };
+
+
+// Filter videos by category
+export const getVideosByCategory = async (req, res) => {
+  try {
+    // Get category from the URL parameter
+    const { category } = req.params;
+
+    // Check whether category is provided
+    if (!category || !category.trim()) {
+      return errorResponse(res, 400, "Category is required");
+    }
+
+    // Find videos that belong to the requested category
+    const videos = await Video.find({
+      category: category.trim(),
+    }).sort({ createdAt: -1 });
+
+    // Convert Mongoose documents into normal JavaScript objects
+    const videoData = videos.map((video) => video.toObject());
+
+    // Send filtered videos
+    return successResponse(
+      res,
+      200,
+      "Videos filtered by category successfully",
+      videoData,
+    );
+  } catch (error) {
+    // Print error in server console for debugging
+    console.error("Filter videos by category error:", error);
+
+    // Send error response
+    return errorResponse(
+      res,
+      500,
+      "Failed to filter videos by category",
+    );
+  }
+};
