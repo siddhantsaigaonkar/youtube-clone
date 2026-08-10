@@ -102,3 +102,50 @@ export const getComments = async (req, res) => {
     );
   }
 };
+
+
+
+// Delete a comment
+export const deleteComment = async (req, res) => {
+  try {
+    // Get comment ID from the URL parameter
+    const { commentId } = req.params;
+
+    // Find the comment
+    const comment = await Comment.findById(commentId);
+
+    // Check whether the comment exists
+    if (!comment) {
+      return errorResponse(res, 404, "Comment not found");
+    }
+
+    // Check whether the logged-in user owns this comment
+    if (comment.user.toString() !== req.user._id.toString()) {
+      return errorResponse(
+        res,
+        403,
+        "You are not authorized to delete this comment",
+      );
+    }
+
+    // Delete the comment from MongoDB
+    await Comment.findByIdAndDelete(commentId);
+
+    // Send successful response
+    return successResponse(
+      res,
+      200,
+      "Comment deleted successfully",
+    );
+  } catch (error) {
+    // Print error in server console for debugging
+    console.error("Delete comment error:", error);
+
+    // Send error response
+    return errorResponse(
+      res,
+      500,
+      "Failed to delete comment",
+    );
+  }
+};

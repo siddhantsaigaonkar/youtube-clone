@@ -3,7 +3,7 @@ import express from "express";
 // Import authentication middleware
 import authMiddleware from "../middleware/authMiddleware.js";
 // Import comment controller
-import { createComment,getComments } from "../controllers/commentController.js";
+import { createComment,getComments,deleteComment } from "../controllers/commentController.js";
 
 
 
@@ -19,6 +19,15 @@ router.post("/:videoId", authMiddleware, createComment);
 // Get all comments for a video
 router.get("/:videoId", getComments);
 
+
+
+// Delete a comment
+// Only the logged-in comment owner can delete it
+router.delete(
+  "/:commentId",
+  authMiddleware,
+  deleteComment,
+);
 
 
 
