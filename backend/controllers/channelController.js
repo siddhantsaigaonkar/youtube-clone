@@ -45,3 +45,43 @@ export const createChannel = async (req, res) => {
     return errorResponse(res, 500, "Failed to create channel");
   }
 };
+
+
+
+// Get channel information
+export const getChannel = async (req, res) => {
+  try {
+    // Get channel ID from the URL parameter
+    const { channelId } = req.params;
+
+    // Find the channel by its ID
+    const channelData = await Channel.findById(channelId).populate(
+      "owner",
+      "name email profilePic",
+    );
+
+    let channel = channelData.toObject()
+    // Check whether the channel exists
+    if (!channel) {
+      return errorResponse(res, 404, "Channel not found");
+    }
+
+    // Send channel information
+    return successResponse(
+      res,
+      200,
+      "Channel fetched successfully",
+      channel,
+    );
+  } catch (error) {
+    // Print error in server console for debugging
+    console.error("Get channel error:", error);
+
+    // Send error response
+    return errorResponse(
+      res,
+      500,
+      "Failed to fetch channel",
+    );
+  }
+};
