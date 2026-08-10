@@ -1,7 +1,7 @@
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { uploadVideo,getAllVideos,getVideoById,deleteVideo,updateVideo,viewVideo } from "../controllers/videoController.js";
+import { uploadVideo,getAllVideos,getVideoById,deleteVideo,updateVideo,viewVideo,searchVideos } from "../controllers/videoController.js";
 
 
 const router = express.Router();
@@ -19,6 +19,11 @@ router.post(
 
 // Get all videos
 router.get("/", getAllVideos);
+
+
+
+// search route
+router.get("/search", searchVideos);
 
 // Get a single video by ID
 router.get("/:id", getVideoById);
@@ -45,5 +50,6 @@ router.put(
 
 // Increase the view count of a video
 router.post("/:id/view", viewVideo);
+
 
 export default router;

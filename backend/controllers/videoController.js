@@ -322,3 +322,48 @@ export const viewVideo = async (req, res) => {
     return errorResponse(res, 500, "Failed to update video views");
   }
 };
+
+
+// Search videos by title
+export const searchVideos = async (req, res) => {
+  try {
+    // Get search text from the URL query
+    const { search } = req.query;
+
+    // Check whether search text is provided
+    if (!search || !search.trim()) {
+      return errorResponse(res, 400, "Search text is required");
+    }
+
+    // Find videos whose title contains the search text
+    // $regex makes the search partial
+    // $options: "i" makes the search case-insensitive
+    const videos = await Video.find({
+      title: {
+        $regex: search.trim(),
+        $options: "i",
+      },
+    }).sort({ createdAt: -1 });
+
+    // Convert Mongoose documents into normal JavaScript objects
+    const videoData = videos.map((video) => video.toObject());
+
+    // Send search results
+    return successResponse(
+      res,
+      200,
+      "Videos searched successfully",
+      videoData,
+    );
+  } catch (error) {
+    // Print error in server console
+    console.error("Search videos error:", error);
+
+    // Send error response
+    return errorResponse(
+      res,
+      500,
+      "Failed to search videos",
+    );
+  }
+};
