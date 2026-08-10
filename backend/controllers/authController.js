@@ -99,11 +99,13 @@ export const getCurrentUser = async (req, res) => {
   try {
     // authMiddleware attaches the authenticated user's details to req.user
     // Return those details to the client
+    let data = req.user.toObject()
+    console.log(data)
     return successResponse(
       res,
       200,
       "User profile fetched successfully",
-      req.user
+      data
     );
   } catch (error) {
     console.error("Error fetching user profile:", error);
