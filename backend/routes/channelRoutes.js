@@ -5,7 +5,7 @@ import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 // Import channel controller
-import { createChannel,getChannel } from "../controllers/channelController.js";
+import { createChannel,getChannel,getChannelVideos} from "../controllers/channelController.js";
 
 
 
@@ -20,6 +20,11 @@ router.post("/", authMiddleware, createChannel);
 // Get channel information
 // Login is not required to view a channel
 router.get("/:channelId", getChannel);
+
+
+
+// Get all videos belonging to a channel
+router.get("/:channelId/videos", getChannelVideos);
 
 // Export router
 export default router;
