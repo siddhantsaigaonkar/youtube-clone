@@ -8,7 +8,6 @@ export const uploadVideo = async (req, res) => {
     const { title, description, category } = req.body;
 
     console.log(req);
-    
 
     // Check whether both video and thumbnail files were uploaded
     if (!req.files?.video || !req.files?.thumbnail) {
@@ -19,15 +18,8 @@ export const uploadVideo = async (req, res) => {
     const videoFile = req.files.video[0];
     const thumbnailFile = req.files.thumbnail[0];
 
-  
-    
-    
-
     // Convert video buffer to Base64 format for Cloudinary
     const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString("base64")}`;
-
-
-    
 
     // Upload video to Cloudinary
     const videoResult = await cloudinary.uploader.upload(videoData, {
@@ -35,7 +27,6 @@ export const uploadVideo = async (req, res) => {
       folder: "youtube-clone/videos",
     });
 
-    
     // Convert thumbnail buffer to Base64 format
     const thumbnailData = `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString(
       "base64",
@@ -47,8 +38,6 @@ export const uploadVideo = async (req, res) => {
       folder: "youtube-clone/thumbnails",
     });
 
- 
-    
     // Create video document in MongoDB
     const video = await Video.create({
       title,
@@ -67,8 +56,12 @@ export const uploadVideo = async (req, res) => {
       owner: req.user._id,
     });
 
-    // Send successful response
-    return successResponse(res, 201, "Video uploaded successfully", video);
+    // Convert Mongoose document into a normal JavaScript object
+    const Data = video.toObject();
+
+    // Send only the actual video data
+    return successResponse(res, 201, "Video uploaded successfully", Data);
+
   } catch (error) {
     console.error("Upload video error:", error);
 
