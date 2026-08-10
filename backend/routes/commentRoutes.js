@@ -3,7 +3,7 @@ import express from "express";
 // Import authentication middleware
 import authMiddleware from "../middleware/authMiddleware.js";
 // Import comment controller
-import { createComment,getComments,deleteComment } from "../controllers/commentController.js";
+import { createComment,getComments,deleteComment,updateComment } from "../controllers/commentController.js";
 
 
 
@@ -27,6 +27,15 @@ router.delete(
   "/:commentId",
   authMiddleware,
   deleteComment,
+);
+
+
+// Update a comment
+// Only the comment owner can edit it
+router.put(
+  "/:commentId",
+  authMiddleware,
+  updateComment,
 );
 
 

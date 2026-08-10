@@ -149,3 +149,70 @@ export const deleteComment = async (req, res) => {
     );
   }
 };
+
+
+
+// Update a comment
+export const updateComment = async (req, res) => {
+  try {
+    // Get comment ID from the URL parameter
+    const { commentId } = req.params;
+
+    // Get the new comment text from request body
+    const { text } = req.body;
+
+    // Check whether comment text was provided
+    if (!text || !text.trim()) {
+      return errorResponse(res, 400, "Comment text is required");
+    }
+
+    // Find the comment
+    const comment = await Comment.findById(commentId);
+
+    // Check whether the comment exists
+    if (!comment) {
+      return errorResponse(res, 404, "Comment not found");
+    }
+
+    // Check whether the logged-in user owns this comment
+    if (comment.user.toString() !== req.user._id.toString()) {
+      return errorResponse(
+        res,
+        403,
+        "You are not authorized to edit this comment",
+      );
+    }
+
+    // Update the comment text
+    comment.text = text.trim();
+
+    // Save the updated comment
+    await comment.save();
+
+    // Get user information along with the updated comment
+    const updatedComment = await Comment.findById(comment._id).populate(
+      "user",
+      "name profilePic",
+    );
+
+    // Convert Mongoose document into a normal JavaScript object
+    const commentData = updatedComment.toObject();
+    // Send successful response
+    return successResponse(
+      res,
+      200,
+      "Comment updated successfully",
+      commentData,
+    );
+  } catch (error) {
+    // Print error in server console for debugging
+    console.error("Update comment error:", error);
+
+    // Send error response
+    return errorResponse(
+      res,
+      500,
+      "Failed to update comment",
+    );
+  }
+};
