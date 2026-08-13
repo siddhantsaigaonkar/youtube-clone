@@ -9,6 +9,7 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 1000, // Maximum comment length
     },
 
     // The user who wrote the comment
