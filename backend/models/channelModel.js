@@ -22,8 +22,18 @@ const channelSchema = new mongoose.Schema(
       default: "",
     },
 
+    profilePicPublicId: {
+      type: String,
+      default: "",
+    },
+
     // Channel banner image
     banner: {
+      type: String,
+      default: "",
+    },
+
+    bannerPublicId: {
       type: String,
       default: "",
     },
