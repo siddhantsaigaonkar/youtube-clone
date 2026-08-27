@@ -1,8 +1,12 @@
 // Import dotenv to load environment variables
 import "dotenv/config";
 
+// Import CORS
+
+import cors from "cors";
+
 // Import Express framework
-import express from "express";
+import express from "express";  
 
 // Import database connection
 import connectDB from "./config/db.js";
@@ -22,6 +26,9 @@ import channelRoutes from "./routes/channelRoutes.js"
 // Import comment routes
 import commentRoutes from "./routes/commentRoutes.js";
 
+// Import subscription routes
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
+
 // Create Express application
 const app = express();
 
@@ -33,6 +40,12 @@ connectDB()
 // Parse incoming JSON data
 app.use(express.json());
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 // Parse URL-encoded data
 app.use(express.urlencoded({ extended: true }));
@@ -51,6 +64,10 @@ app.use("/api/channels", channelRoutes);
 
 // Use comment routes
 app.use("/api/comments", commentRoutes);
+
+
+// Use subscription routes
+app.use("/api/subscriptions", subscriptionRoutes);
 
 
 app.get("/", (req, res) => {
