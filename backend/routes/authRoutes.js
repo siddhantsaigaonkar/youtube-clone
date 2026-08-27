@@ -1,5 +1,5 @@
 import express from "express";
-import { signup,signin,getCurrentUser } from "../controllers/authController.js";
+import { signup,signin,getCurrentUser, signout } from "../controllers/authController.js";
 import { validateSignup, validateLogin } from "../middleware/authValidation.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -11,6 +11,11 @@ router.post("/signup", validateSignup, signup);
 
 // Login existing user
 router.post("/signin", validateLogin, signin);
+
+
+
+// Logout route
+router.post("/signout", signout);
 
 // Get logged-in user's profile
 router.get("/me", authMiddleware, getCurrentUser);
