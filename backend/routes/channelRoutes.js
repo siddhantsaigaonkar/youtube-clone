@@ -4,26 +4,65 @@ import express from "express";
 // Import authentication middleware
 import authMiddleware from "../middleware/authMiddleware.js";
 
-// Import channel controller
-import { createChannel,getChannel,getChannelVideos} from "../controllers/channelController.js";
+// Import channel controllers
+import {
+  createChannel,
+  getChannel,
+  getChannelVideos,
+  getMyChannel,
+  getAllChannels
+} from "../controllers/channelController.js";
 
-
+// Import upload middleware
+import upload from "../middleware/uploadMiddleware.js";
 
 // Create Express router
 const router = express.Router();
 
-// Create a new channel
-// User must be logged in to create a channel
-router.post("/", authMiddleware, createChannel);
+// =====================================================
+// CREATE CHANNEL
+// =====================================================
+
+// User must be logged in
+router.post(
+  "/",
+  authMiddleware,
+  upload.fields([
+    { name: "profilePic", maxCount: 1 },
+    { name: "banner", maxCount: 1 },
+  ]),
+  createChannel,
+);
 
 
-// Get channel information
-// Login is not required to view a channel
+
+// =====================================================
+// GET ALL channels
+// =====================================================
+
+router.get("/", getAllChannels);
+
+
+
+// =====================================================
+// GET MY CHANNEL
+// =====================================================
+
+// Get channel of the currently logged-in user
+router.get("/my-channel", authMiddleware, getMyChannel);
+
+// =====================================================
+// GET CHANNEL INFORMATION
+// =====================================================
+
+// Login is not required
 router.get("/:channelId", getChannel);
 
+// =====================================================
+// GET CHANNEL VIDEOS
+// =====================================================
 
-
-// Get all videos belonging to a channel
+// Get all videos uploaded by this channel
 router.get("/:channelId/videos", getChannelVideos);
 
 // Export router
