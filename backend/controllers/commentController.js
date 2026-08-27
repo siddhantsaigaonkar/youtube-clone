@@ -73,6 +73,14 @@ export const getComments = async (req, res) => {
     // Get video ID from the URL parameter
     const { videoId } = req.params;
 
+    // Check whether the video exists
+    const video = await Video.findById(videoId);
+
+    // Return error if video does not exist
+    if (!video) {
+      return errorResponse(res, 404, "Video not found");
+    }
+
     // Find all comments belonging to this video
     const comments = await Comment.find({
       video: videoId,
