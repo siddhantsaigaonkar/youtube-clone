@@ -1,7 +1,7 @@
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { uploadVideo,getAllVideos,getVideoById,deleteVideo,updateVideo,viewVideo,searchVideos,getVideosByCategory } from "../controllers/videoController.js";
+import { uploadVideo,getAllVideos,getVideoById,deleteVideo,updateVideo,viewVideo,searchVideos,getVideosByCategory,getMyVideos } from "../controllers/videoController.js";
 
 
 const router = express.Router();
@@ -24,6 +24,15 @@ router.get("/", getAllVideos);
 
 // search route
 router.get("/search", searchVideos);
+
+
+
+// Get videos uploaded by logged-in user
+router.get(
+  "/my-videos",
+  authMiddleware,
+  getMyVideos,
+);
 
 
 // Filter videos by category
