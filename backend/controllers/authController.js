@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import { successResponse, errorResponse } from "../utils/response.js";
+import Channel from "../models/channelModel.js";
+
 
 
 // signup controller
@@ -93,14 +95,42 @@ export const signin = async (req, res) => {
   }
 };
 
-// Get the profile of the currently logged-in user
 
+
+// Logout the currently logged-in user
+export const signout = async (req, res) => {
+  try {
+    // Send a successful logout response
+    return successResponse(res, 200, "Logout successful");
+  } catch (error) {
+    // Log the error for debugging
+    console.error("Logout error:", error);
+
+    // Send error response to the client
+    return errorResponse(res, 500, "Failed to logout");
+  }
+};
+
+// Get the profile of the currently logged-in user
+// Get the profile of the currently logged-in user
 export const getCurrentUser = async (req, res) => {
   try {
-    // authMiddleware attaches the authenticated user's details to req.user
-    // Return those details to the client
-    let data = req.user.toObject()
-    console.log(data)
+    // Get authenticated user
+    const user = req.user;
+
+    // Find the channel owned by this user
+    const channel = await Channel.findOne({
+      owner: user._id,
+    });
+
+    // Convert user document to normal JavaScript object
+    const data = user.toObject();
+
+    // Add channel to user data
+    data.channel = channel;
+
+    console.log("Current user:", data);
+
     return successResponse(
       res,
       200,
