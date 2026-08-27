@@ -50,6 +50,13 @@ const videoSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Channel to which this video belongs
+    channel: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Channel",
+      required: true,
+    },
+
     // Controls whether the video is public or private
     isPublished: {
       type: Boolean,
