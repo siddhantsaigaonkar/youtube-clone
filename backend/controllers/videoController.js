@@ -1,25 +1,54 @@
 import cloudinary from "../config/cloudinary.js";
+import Channel from "../models/channelModel.js";
 import Video from "../models/videoModel.js";
+
 import { successResponse, errorResponse } from "../utils/response.js";
 
 export const uploadVideo = async (req, res) => {
   try {
-    // Get video information from the request body
+    // Get video information from request body
     const { title, description, category } = req.body;
 
-    console.log(req);
+    // Check required text fields
+    if (!title || !title.trim()) {
+      return errorResponse(res, 400, "Video title is required");
+    }
 
-    // Check whether both video and thumbnail files were uploaded
+    if (!description || !description.trim()) {
+      return errorResponse(res, 400, "Video description is required");
+    }
+
+    if (!category || !category.trim()) {
+      return errorResponse(res, 400, "Category is required");
+    }
+
+    // Find the channel owned by the logged-in user
+    const channel = await Channel.findOne({
+      owner: req.user._id,
+    });
+
+    // User must have a channel before uploading
+    if (!channel) {
+      return errorResponse(
+        res,
+        400,
+        "Please create a channel before uploading a video",
+      );
+    }
+
+    // Check whether video and thumbnail were uploaded
     if (!req.files?.video || !req.files?.thumbnail) {
       return errorResponse(res, 400, "Video and thumbnail are required");
     }
 
-    // Get the uploaded files from Multer
+    // Get uploaded files
     const videoFile = req.files.video[0];
     const thumbnailFile = req.files.thumbnail[0];
 
-    // Convert video buffer to Base64 format for Cloudinary
-    const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString("base64")}`;
+    // Convert video to Base64
+    const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString(
+      "base64",
+    )}`;
 
     // Upload video to Cloudinary
     const videoResult = await cloudinary.uploader.upload(videoData, {
@@ -27,7 +56,7 @@ export const uploadVideo = async (req, res) => {
       folder: "youtube-clone/videos",
     });
 
-    // Convert thumbnail buffer to Base64 format
+    // Convert thumbnail to Base64
     const thumbnailData = `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString(
       "base64",
     )}`;
@@ -38,55 +67,91 @@ export const uploadVideo = async (req, res) => {
       folder: "youtube-clone/thumbnails",
     });
 
-    // Create video document in MongoDB
+    // Create video
     const video = await Video.create({
-      title,
-      description,
-      category,
+      title: title.trim(),
+      description: description.trim(),
+      category: category.trim(),
 
-      // Video Cloudinary details
+      // Automatically use user's channel
+      channel: channel._id,
+
+      // Logged-in user
+      owner: req.user._id,
+
+      // Cloudinary video
       videoUrl: videoResult.secure_url,
       videoPublicId: videoResult.public_id,
 
-      // Thumbnail Cloudinary details
+      // Cloudinary thumbnail
       thumbnailUrl: thumbnailResult.secure_url,
       thumbnailPublicId: thumbnailResult.public_id,
-
-      // User is provided by authMiddleware after JWT verification
-      owner: req.user._id,
     });
 
-    // Convert Mongoose document into a normal JavaScript object
-    const Data = video.toObject();
+    // Convert to normal object
+const createdVideo = video.toObject();
 
-    // Send only the actual video data
-    return successResponse(res, 201, "Video uploaded successfully", Data);
-
+    // Successful response
+    return successResponse(res, 201, "Video uploaded successfully", createdVideo);
   } catch (error) {
     console.error("Upload video error:", error);
 
-    // Send error response if upload or database operation fails
     return errorResponse(res, 500, "Failed to upload video");
   }
 };
 
 // Get all videos
+// export const getAllVideos = async (req, res) => {
+//   try {
+//     // Fetch all videos from MongoDB
+//     const videos = await Video.find()
+//       .populate("owner", "name profilePic").populate("channel")
+//       .sort({ createdAt: -1 });
+
+//     if (videos.length === 0) {
+//        return successResponse(res, 200, "no video added ");
+//     }
+//     // Send successful response
+//     return successResponse(res, 200, "Videos fetched successfully", videos);
+//   } catch (error) {
+//     console.error("Get all videos error:", error);
+
+//     // Send error response
+//     return errorResponse(res, 500, "Failed to fetch videos");
+//   }
+// };
+
+
+// Get all videos
 export const getAllVideos = async (req, res) => {
   try {
-    // Fetch all videos from MongoDB
-    const videos = await Video.find()
+    // Get category from query parameter
+    const { category } = req.query;
+
+    // Create filter object
+    const filter = {};
+
+    // If a category is selected and it is not "All"
+    if (category && category !== "All") {
+      filter.category = category;
+    }
+
+    // Fetch videos based on the filter
+    const videos = await Video.find(filter)
       .populate("owner", "name profilePic")
+      .populate("channel")
       .sort({ createdAt: -1 });
 
-    if (videos.length === 0) {
-       return successResponse(res, 200, "no video added ");
-    }
     // Send successful response
-    return successResponse(res, 200, "Videos fetched successfully", videos);
+    return successResponse(
+      res,
+      200,
+      "Videos fetched successfully",
+      videos,
+    );
   } catch (error) {
     console.error("Get all videos error:", error);
 
-    // Send error response
     return errorResponse(res, 500, "Failed to fetch videos");
   }
 };
@@ -98,7 +163,9 @@ export const getVideoById = async (req, res) => {
     const { id } = req.params;
 
     // Find the video in MongoDB and include basic owner information
-    const video = await Video.findById(id).populate("owner", "name profilePic");
+    const video = await Video.findById(id)
+      .populate("owner", "name profilePic")
+      .populate("channel");
 
     // Check if the video exists
     if (!video) {
@@ -123,13 +190,13 @@ export const deleteVideo = async (req, res) => {
     // Find the video by ID
     const video = await Video.findById(id);
 
-    console.log(video);
-    
-
     // Check whether the video exists
     if (!video) {
       return errorResponse(res, 404, "Video not found");
     }
+
+    console.log("Video owner:", video.owner.toString());
+    console.log("Logged in user:", req.user._id.toString());
 
     // Check whether the logged-in user owns this video
     if (video.owner.toString() !== req.user._id.toString()) {
@@ -156,9 +223,11 @@ export const deleteVideo = async (req, res) => {
 
     // Delete the video from MongoDB
     await Video.findByIdAndDelete(id);
-
+    console.log(res);
     // Send successful response
     return successResponse(res, 200, "Video deleted successfully");
+
+    
   } catch (error) {
     console.error("Delete video error:", error);
 
@@ -324,46 +393,78 @@ export const viewVideo = async (req, res) => {
 };
 
 
-// Search videos by title
+// Search videos by title, category, or channel name
 export const searchVideos = async (req, res) => {
   try {
-    // Get search text from the URL query
     const { search } = req.query;
 
-    // Check whether search text is provided
+    // Check search text
     if (!search || !search.trim()) {
-      return errorResponse(res, 400, "Search text is required");
+      return errorResponse(
+        res,
+        400,
+        "Search text is required"
+      );
     }
 
-    // Find videos whose title contains the search text
-    // $regex makes the search partial
-    // $options: "i" makes the search case-insensitive
-    const videos = await Video.find({
-      title: {
-        $regex: search.trim(),
+    const searchText = search.trim();
+
+    // Find channels whose channelName matches the search
+    const matchingChannels = await Channel.find({
+      channelName: {
+        $regex: searchText,
         $options: "i",
       },
-    }).sort({ createdAt: -1 });
+    });
 
-    // Convert Mongoose documents into normal JavaScript objects
-    const videoData = videos.map((video) => video.toObject());
+    // Get IDs of matching channels
+    const channelIds = matchingChannels.map(
+      (channel) => channel._id
+    );
 
-    // Send search results
+    // Search videos by title, category, or channel
+    const videos = await Video.find({
+      isPublished: true,
+
+      $or: [
+        {
+          title: {
+            $regex: searchText,
+            $options: "i",
+          },
+        },
+
+        {
+          category: {
+            $regex: searchText,
+            $options: "i",
+          },
+        },
+
+        {
+          channel: {
+            $in: channelIds,
+          },
+        },
+      ],
+    })
+      .populate("owner", "name profilePic")
+      .populate("channel")
+      .sort({ createdAt: -1 });
+
     return successResponse(
       res,
       200,
-      "Videos searched successfully",
-      videoData,
+      "Search completed successfully",
+      videos
     );
   } catch (error) {
-    // Print error in server console
     console.error("Search videos error:", error);
 
-    // Send error response
     return errorResponse(
       res,
       500,
-      "Failed to search videos",
+      "Failed to search videos"
     );
   }
 };
@@ -404,6 +505,39 @@ export const getVideosByCategory = async (req, res) => {
       res,
       500,
       "Failed to filter videos by category",
+    );
+  }
+};
+
+
+// Get videos uploaded by the logged-in user
+export const getMyVideos = async (req, res) => {
+  try {
+    // Get logged-in user's ID
+    const userId = req.user._id;
+
+    // Find videos uploaded by this user
+    const videos = await Video.find({
+      owner: userId,
+    })
+      .populate("owner", "name profilePic")
+      .populate("channel")
+      .sort({ createdAt: -1 });
+
+    // Send videos
+    return successResponse(
+      res,
+      200,
+      "My videos fetched successfully",
+      videos,
+    );
+  } catch (error) {
+    console.error("Get my videos error:", error);
+
+    return errorResponse(
+      res,
+      500,
+      "Failed to fetch my videos",
     );
   }
 };
