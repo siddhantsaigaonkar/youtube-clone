@@ -39,7 +39,6 @@ function SubscribeButton({ channelId, initialSubscribers = 0 }) {
 
         const response = await API.get(`/subscriptions/check/${channelId}`);
 
-        console.log("Subscription status:", response.data);
 
         setSubscribed(response.data.data.subscribed);
       } catch (error) {
@@ -77,8 +76,6 @@ function SubscribeButton({ channelId, initialSubscribers = 0 }) {
          */
         const response = await API.delete(`/subscriptions/${channelId}`);
 
-        console.log("Unsubscribe response:", response.data);
-
         if (response.data.success) {
           setSubscribed(false);
 
@@ -96,7 +93,6 @@ function SubscribeButton({ channelId, initialSubscribers = 0 }) {
          */
         const response = await API.post(`/subscriptions/${channelId}`);
 
-        console.log("Subscribe response:", response.data);
 
         if (response.data.success) {
           setSubscribed(true);

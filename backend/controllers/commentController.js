@@ -13,8 +13,6 @@ export const createComment = async (req, res) => {
     // Get video ID from the URL parameter
     const { videoId } = req.params;
 
-    console.log("REQ BODY:", req.body);
-
     // Get comment text from request body
     const { text } = req.body;
 

@@ -19,8 +19,6 @@ function Subscriptions() {
 
       const response = await API.get("/subscriptions/my");
 
-      console.log("My subscriptions:", response.data);
-
       setSubscriptions(response.data.data || []);
     } catch (error) {
       console.error("Fetch subscriptions error:", error);

@@ -195,8 +195,7 @@ export const deleteVideo = async (req, res) => {
       return errorResponse(res, 404, "Video not found");
     }
 
-    console.log("Video owner:", video.owner.toString());
-    console.log("Logged in user:", req.user._id.toString());
+ 
 
     // Check whether the logged-in user owns this video
     if (video.owner.toString() !== req.user._id.toString()) {

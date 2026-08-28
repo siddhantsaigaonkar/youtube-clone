@@ -57,7 +57,6 @@ function CommentSection() {
 
       const data = await getComments(id);
 
-      console.log("Comments received:", data);
 
       setComments(data);
     } catch (error) {
@@ -98,8 +97,6 @@ function CommentSection() {
       setError("");
 
       const newComment = await createComment(id, commentText.trim());
-
-      console.log("New comment:", newComment);
 
       // Add new comment at top
       setComments((prevComments) => [newComment, ...prevComments]);
@@ -147,8 +144,6 @@ function CommentSection() {
 
       const updatedComment = await updateComment(commentId, editingText.trim());
 
-      console.log("Updated comment:", updatedComment);
-
       // Replace old comment with updated comment
       setComments((prevComments) =>
         prevComments.map((comment) =>
@@ -185,8 +180,6 @@ function CommentSection() {
       setError("");
 
       await deleteComment(commentId);
-
-      console.log("Comment deleted:", commentId);
 
       // Remove comment from state
       setComments((prevComments) =>
