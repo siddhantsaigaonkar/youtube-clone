@@ -414,7 +414,7 @@ export const searchVideos = async (req, res) => {
       channelName: {
         $regex: searchText,
         $options: "i",
-      },
+      },  
     });
 
     // Get IDs of matching channels
