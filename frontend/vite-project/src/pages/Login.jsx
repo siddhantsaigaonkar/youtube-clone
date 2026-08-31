@@ -7,7 +7,7 @@ import { AuthContext } from "../context/AuthContext";
 function Login() {
   const navigate = useNavigate();
 
-  const { setUser } = useContext(AuthContext);
+  const { setUser, checkAuth } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -26,40 +26,45 @@ function Login() {
   };
 
   // Handle login
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  // Handle login
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    setLoading(true);
-    setError("");
+    try {
+      setLoading(true);
+      setError("");
 
-    const response = await API.post("/auth/signin", formData);
+      const response = await API.post("/auth/signin", formData);
 
-    console.log("Login response:", response.data);
+      console.log("Login response:", response.data);
 
-    if (response.data.success) {
-      const token = response.data.data.token;
-      const loggedInUser = response.data.data.user;
+      if (response.data.success) {
+        const token = response.data.data.token;
+        const loggedInUser = response.data.data.user;
 
-      // Store JWT token
-      localStorage.setItem("token", token);
+        // Store JWT token
+        localStorage.setItem("token", token);
 
-      // Store user in AuthContext
-      setUser(loggedInUser);
+        // Store the logged-in user in AuthContext
+        setUser(loggedInUser);
 
-      // Go to home
-      navigate("/");
-    } else {
-      setError(response.data.message || "Login failed");
+        // Fetch the complete user data from the backend.
+        // This includes the user's channel information.
+        await checkAuth();
+
+        // Go to home page
+        navigate("/");
+      } else {
+        setError(response.data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+
+      setError(error.response?.data?.message || "Invalid email or password");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Login error:", error);
-
-    setError(error.response?.data?.message || "Invalid email or password");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-black">

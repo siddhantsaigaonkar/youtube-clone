@@ -76,7 +76,7 @@ export const signin = async (req, res) => {
 
     // Generate JWT token
     const token = generateToken(user._id);
-    console.log(token);
+
 
     // Send success response
     return successResponse(res, 200, "Login successful", {
@@ -128,8 +128,6 @@ export const getCurrentUser = async (req, res) => {
 
     // Add channel to user data
     data.channel = channel;
-
-    console.log("Current user:", data);
 
     return successResponse(
       res,

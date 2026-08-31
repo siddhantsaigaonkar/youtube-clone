@@ -294,7 +294,6 @@ function EditVideo() {
   return (
     <div className="min-h-screen bg-white px-4 py-8 dark:bg-gray-950 sm:px-6">
       <div className="mx-auto max-w-3xl">
-
         {/* =========================
             HEADER
         ========================= */}
@@ -327,7 +326,6 @@ function EditVideo() {
             sm:p-8
           "
         >
-
           {/* =========================
               VIDEO
           ========================= */}
@@ -338,7 +336,6 @@ function EditVideo() {
             </label>
 
             <div className="relative mt-2 overflow-hidden rounded-xl bg-black">
-
               <video
                 src={videoPreview}
                 controls
@@ -367,9 +364,7 @@ function EditVideo() {
                 "
               >
                 <Video size={16} />
-
                 Change video
-
                 <input
                   type="file"
                   accept="video/*"
@@ -405,8 +400,7 @@ function EditVideo() {
             </div>
 
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Select a new video only if you want to replace the current
-              video.
+              Select a new video only if you want to replace the current video.
             </p>
           </div>
 
@@ -420,7 +414,6 @@ function EditVideo() {
             </label>
 
             <div className="relative mt-2 overflow-hidden rounded-xl">
-
               <img
                 src={thumbnailPreview}
                 alt="Video thumbnail"
@@ -449,9 +442,7 @@ function EditVideo() {
                 "
               >
                 <ImagePlus size={16} />
-
                 Change thumbnail
-
                 <input
                   type="file"
                   accept="image/*"
@@ -487,8 +478,8 @@ function EditVideo() {
             </div>
 
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Select a new thumbnail only if you want to replace the
-              current thumbnail.
+              Select a new thumbnail only if you want to replace the current
+              thumbnail.
             </p>
           </div>
 
@@ -600,12 +591,12 @@ function EditVideo() {
               <option value="">Select category</option>
               <option value="Music">Music</option>
               <option value="Gaming">Gaming</option>
-              <option value="Education">Education</option>
-              <option value="Technology">Technology</option>
-              <option value="Sports">Sports</option>
-              <option value="Entertainment">Entertainment</option>
+              <option value="React">React</option>
+              <option value="Programming">Programming</option>
+              <option value="Technology">JavaScript</option>
               <option value="News">News</option>
-              <option value="Travel">Travel</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Live">Live</option>
             </select>
           </div>
 
@@ -636,7 +627,6 @@ function EditVideo() {
           ========================= */}
 
           <div className="mt-8 flex justify-end gap-3">
-
             {/* Cancel */}
 
             <button
@@ -683,7 +673,6 @@ function EditVideo() {
 
               {saving ? "Saving..." : "Save changes"}
             </button>
-
           </div>
         </form>
       </div>

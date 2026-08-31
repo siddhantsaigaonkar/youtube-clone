@@ -4,6 +4,129 @@ import Video from "../models/videoModel.js";
 
 import { successResponse, errorResponse } from "../utils/response.js";
 
+// export const uploadVideo = async (req, res) => {
+//   try {
+//     // Get video information from request body
+//     const { title, description, category } = req.body;
+
+//     // Check required text fields
+//     if (!title || !title.trim()) {
+//       return errorResponse(res, 400, "Video title is required");
+//     }
+
+//     if (!description || !description.trim()) {
+//       return errorResponse(res, 400, "Video description is required");
+//     }
+
+//     if (!category || !category.trim()) {
+//       return errorResponse(res, 400, "Category is required");
+//     }
+
+//     // Find the channel owned by the logged-in user
+//     const channel = await Channel.findOne({
+//       owner: req.user._id,
+//     });
+
+//     // User must have a channel before uploading
+//     if (!channel) {
+//       return errorResponse(
+//         res,
+//         400,
+//         "Please create a channel before uploading a video",
+//       );
+//     }
+
+//     // Check whether video and thumbnail were uploaded
+//     if (!req.files?.video || !req.files?.thumbnail) {
+//       return errorResponse(res, 400, "Video and thumbnail are required");
+//     }
+
+//     // Get uploaded files
+//     const videoFile = req.files.video[0];
+//     const thumbnailFile = req.files.thumbnail[0];
+
+//     // Convert video to Base64
+//     const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString(
+//       "base64",
+//     )}`;
+
+//     // Upload video to Cloudinary
+//     const videoResult = await cloudinary.uploader.upload(videoData, {
+//       resource_type: "video",
+//       folder: "youtube-clone/videos",
+//     });
+
+//     // Convert thumbnail to Base64
+//     const thumbnailData = `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString(
+//       "base64",
+//     )}`;
+
+//     // Upload thumbnail to Cloudinary
+//     const thumbnailResult = await cloudinary.uploader.upload(thumbnailData, {
+//       resource_type: "image",
+//       folder: "youtube-clone/thumbnails",
+//     });
+
+//     // Create video
+//     const video = await Video.create({
+//       title: title.trim(),
+//       description: description.trim(),
+//       category: category.trim(),
+
+//       // Automatically use user's channel
+//       channel: channel._id,
+
+//       // Logged-in user
+//       owner: req.user._id,
+
+//       // Cloudinary video
+//       videoUrl: videoResult.secure_url,
+//       videoPublicId: videoResult.public_id,
+
+//       // Cloudinary thumbnail
+//       thumbnailUrl: thumbnailResult.secure_url,
+//       thumbnailPublicId: thumbnailResult.public_id,
+//     });
+
+//     // Convert to normal object
+// const createdVideo = video.toObject();
+
+//     // Successful response
+//     return successResponse(res, 201, "Video uploaded successfully", createdVideo);
+//   } catch (error) {
+//     console.error("Upload video error:", error);
+
+//     return errorResponse(res, 500, "Failed to upload video");
+//   }
+// };
+
+// Get all videos
+// export const getAllVideos = async (req, res) => {
+//   try {
+//     // Fetch all videos from MongoDB
+//     const videos = await Video.find()
+//       .populate("owner", "name profilePic").populate("channel")
+//       .sort({ createdAt: -1 });
+
+//     if (videos.length === 0) {
+//        return successResponse(res, 200, "no video added ");
+//     }
+//     // Send successful response
+//     return successResponse(res, 200, "Videos fetched successfully", videos);
+//   } catch (error) {
+//     console.error("Get all videos error:", error);
+
+//     // Send error response
+//     return errorResponse(res, 500, "Failed to fetch videos");
+//   }
+// };
+
+
+// Get all videos
+
+
+import { Readable } from "stream";
+
 export const uploadVideo = async (req, res) => {
   try {
     // Get video information from request body
@@ -45,35 +168,52 @@ export const uploadVideo = async (req, res) => {
     const videoFile = req.files.video[0];
     const thumbnailFile = req.files.thumbnail[0];
 
-    // Convert video to Base64
-    const videoData = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString(
-      "base64",
-    )}`;
+    // =====================================================
+    // UPLOAD VIDEO TO CLOUDINARY USING STREAM
+    // =====================================================
 
-    // Upload video to Cloudinary
-    const videoResult = await cloudinary.uploader.upload(videoData, {
-      resource_type: "video",
-      folder: "youtube-clone/videos",
+    const videoResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "video",
+          folder: "youtube-clone/videos",
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        },
+      );
+
+      // Send video buffer to Cloudinary stream
+      Readable.from(videoFile.buffer).pipe(uploadStream);
     });
 
-    // Convert thumbnail to Base64
+    // =====================================================
+    // UPLOAD THUMBNAIL
+    // =====================================================
+
     const thumbnailData = `data:${thumbnailFile.mimetype};base64,${thumbnailFile.buffer.toString(
       "base64",
     )}`;
 
-    // Upload thumbnail to Cloudinary
     const thumbnailResult = await cloudinary.uploader.upload(thumbnailData, {
       resource_type: "image",
       folder: "youtube-clone/thumbnails",
     });
 
-    // Create video
+    // =====================================================
+    // SAVE VIDEO IN DATABASE
+    // =====================================================
+
     const video = await Video.create({
       title: title.trim(),
       description: description.trim(),
       category: category.trim(),
 
-      // Automatically use user's channel
+      // Channel
       channel: channel._id,
 
       // Logged-in user
@@ -88,11 +228,16 @@ export const uploadVideo = async (req, res) => {
       thumbnailPublicId: thumbnailResult.public_id,
     });
 
-    // Convert to normal object
-const createdVideo = video.toObject();
+    // Convert MongoDB document to normal object
+    const createdVideo = video.toObject();
 
     // Successful response
-    return successResponse(res, 201, "Video uploaded successfully", createdVideo);
+    return successResponse(
+      res,
+      201,
+      "Video uploaded successfully",
+      createdVideo,
+    );
   } catch (error) {
     console.error("Upload video error:", error);
 
@@ -100,29 +245,6 @@ const createdVideo = video.toObject();
   }
 };
 
-// Get all videos
-// export const getAllVideos = async (req, res) => {
-//   try {
-//     // Fetch all videos from MongoDB
-//     const videos = await Video.find()
-//       .populate("owner", "name profilePic").populate("channel")
-//       .sort({ createdAt: -1 });
-
-//     if (videos.length === 0) {
-//        return successResponse(res, 200, "no video added ");
-//     }
-//     // Send successful response
-//     return successResponse(res, 200, "Videos fetched successfully", videos);
-//   } catch (error) {
-//     console.error("Get all videos error:", error);
-
-//     // Send error response
-//     return errorResponse(res, 500, "Failed to fetch videos");
-//   }
-// };
-
-
-// Get all videos
 export const getAllVideos = async (req, res) => {
   try {
     // Get category from query parameter
@@ -194,8 +316,6 @@ export const deleteVideo = async (req, res) => {
     if (!video) {
       return errorResponse(res, 404, "Video not found");
     }
-
- 
 
     // Check whether the logged-in user owns this video
     if (video.owner.toString() !== req.user._id.toString()) {

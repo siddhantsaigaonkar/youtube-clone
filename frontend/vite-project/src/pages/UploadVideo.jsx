@@ -556,21 +556,15 @@ function UploadVideo() {
             >
               <option value="">Select category</option>
 
+               <option value="">Select category</option>
               <option value="Music">Music</option>
-
               <option value="Gaming">Gaming</option>
-
-              <option value="Education">Education</option>
-
-              <option value="Technology">Technology</option>
-
-              <option value="Sports">Sports</option>
-
-              <option value="Entertainment">Entertainment</option>
-
+              <option value="React">React</option>
+              <option value="Programming">Programming</option>
+              <option value="Technology">JavaScript</option>
               <option value="News">News</option>
-
-              <option value="Travel">Travel</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Live">Live</option>
             </select>
           </div>
 
